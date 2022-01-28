@@ -55,6 +55,7 @@ function fail(msg){
 	const assetsDir = path.join(destRoot, 'assets');
 
 	await fs.copy(srcRoot, destRoot, { overwrite: true })
+	if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir)
 
 	const files = (await asyncIterableToArray(getFiles(destRoot)))
 		.filter(path => path.endsWith('.html'))
