@@ -5,43 +5,58 @@ const streamPipeline = util.promisify(require('stream').pipeline)
 const fs = require('fs-extra');
 const fetch = require('node-fetch');
 
-async function* getFiles(dir) {
-	const dirents = await fs.promises.readdir(dir, { withFileTypes: true });
-	for (const dirent of dirents) {
-		const res = path.resolve(dir, dirent.name);
+/**
+ * Get all filepaths of files within provided {@link directory}.
+ *
+ * @param {string} directory directory to get all filepaths of files in
+ */
+async function* getFiles(directory) {
+	for (const dirent of await fs.promises.readdir(directory, { withFileTypes: true })) {
+		const direntPath = path.resolve(directory, dirent.name);
 		if (dirent.isDirectory()) {
-			yield* getFiles(res);
+			yield* getFiles(direntPath);
 		} else {
-			yield res;
+			yield direntPath;
 		}
 	}
 }
 
-const asyncIteratorToArray = async iterator => {
+/**
+ * Convert async iterable to an array of the items.
+ *
+ * @param {AsyncIterable<T>} iterable async iterable to convert
+ * @returns {Promise<T[]>} async iterale items
+ */
+const asyncIterableToArray = async iterable => {
 	const items = []
-	for await (const item of iterator) items.push(item)
+	for await (const item of iterable) items.push(item)
 	return items;
 }
 
+
+const HELP_MESSAGE = `Download all hotlinked images described in HTML files, and link to them
+Usage:\t [Source Directory] [Destination Directory]`
+
+/**
+ * @param {string} msg failure message
+ */
+function fail(msg){
+	console.log(HELP_MESSAGE)
+	console.error('Error:', msg)
+	return process.exit(1)
+}
+
 (async () => {
-	console.log('Download all hotlinked images described in HTML files, and link to them')
-	console.log('Usage:\t [Source Directory] [Destination Directory]')
 	const srcRoot = process.argv[2]
-	if (!srcRoot) {
-		console.error('Source path required');
-		process.exit(1);
-	}
+	if (!srcRoot) return fail('Source path required');
 
 	const destRoot = process.argv[3]
-	if (!destRoot) {
-		console.error('Destination path required');
-		process.exit(1);
-	}
+	if (!destRoot) return fail('Destination path required');
 	const assetsDir = path.join(destRoot, 'assets');
 
 	await fs.copy(srcRoot, destRoot, { overwrite: true })
 
-	const files = (await asyncIteratorToArray(getFiles(destRoot)))
+	const files = (await asyncIterableToArray(getFiles(destRoot)))
 		.filter(path => path.endsWith('.html'))
 		.filter(path => !path.split('/').some(part => part.startsWith('.')));
 
