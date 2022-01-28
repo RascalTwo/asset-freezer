@@ -1,13 +1,18 @@
 {
   "name": "asset-freezer",
   "version": "1.0.0",
-  "description": "",
+  "description": "Download all hotlinked images described in HTML files, and link to them",
+  "homepage": "https://github.com/RascalTwo/asset-freezer",
+  "author": "Rascal_Two <therealrascaltwo@gmail.com> (https://github.com/RascalTwo)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RascalTwo/asset-freezer.git"
+  },
   "main": "freeze.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node freeze.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "fs-extra": "^10.0.0",
     "node-fetch": "^2.6.6"
